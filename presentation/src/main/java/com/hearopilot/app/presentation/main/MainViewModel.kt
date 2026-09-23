@@ -113,7 +113,7 @@ class MainViewModel @Inject constructor(
     private var accumulatedDurationMs: Long = 0L
     private var isInitialized = false // Track if STT and LLM are already initialized
     private var currentRecordingMode: RecordingMode = RecordingMode.SHORT_MEETING
-    private var currentInputLanguage: String = "it"
+    private var currentInputLanguage: String = "auto"
     private var currentOutputLanguage: String? = null
     private var currentInsightStrategy: InsightStrategy = InsightStrategy.REAL_TIME
     private var currentTopic: String? = null
@@ -207,19 +207,47 @@ class MainViewModel @Inject constructor(
             val settings = settingsRepository.getSettings().first()
             _uiState.update { it.copy(settings = settings) }
 
-            // Initialize STT
-            if (settings.sttModelPath.isNotBlank()) {
-                startSttStreamingUseCase(settings.sttModelPath)
+            // Resolve the session before STT initialization so its speech language can
+            // select the correct recognizer pack. Existing sessions default to "auto".
+            val sessionForStt = transcriptionRepository.getSession(sessionId).first()
+            currentInputLanguage = sessionForStt?.inputLanguage ?: currentInputLanguage
+            modelDownloadManager.setActiveSttLanguage(currentInputLanguage)
+            val sttVariant = modelDownloadManager.getActiveSttVariant()
+
+            // Japanese/Cantonese use the optional SenseVoice pack. Download it on first use;
+            // the existing Parakeet onboarding path remains unchanged for all other languages.
+            if (!modelDownloadManager.isSttModelDownloaded(sttVariant)) {
+                Log.i(TAG, "Downloading STT variant for language=$currentInputLanguage: $sttVariant")
+                _uiState.update { it.copy(isDownloadingModel = true, downloadProgress = 0) }
+                try {
+                    modelDownloadManager.downloadSttModel(sttVariant).collect { progress ->
+                        _uiState.update { it.copy(downloadProgress = progress.percentage) }
+                    }
+                } catch (e: Exception) {
+                    Log.e(TAG, "STT variant download failed", e)
+                    _uiState.update {
+                        it.copy(
+                            isDownloadingModel = false,
+                            error = "Speech recognition model download failed: ${e.message}"
+                        )
+                    }
+                } finally {
+                    _uiState.update { it.copy(isDownloadingModel = false) }
+                }
+            }
+
+            val sttModelPath = modelDownloadManager.getSttModelPath(sttVariant)
+            if (sttModelPath != null) {
+                startSttStreamingUseCase(sttModelPath)
                     .onFailure { e ->
                         Log.e(TAG, "STT initialization failed", e)
                         _uiState.update { it.copy(error = "STT init failed: ${e.message}") }
                     }
                     .onSuccess {
-                        Log.i(TAG, "STT initialized successfully")
+                        Log.i(TAG, "STT initialized successfully: $sttVariant")
                     }
             } else {
-                Log.w(TAG, "STT model path not configured")
-                _uiState.update { it.copy(error = "STT model path not configured") }
+                _uiState.update { it.copy(error = "Speech recognition model is not available") }
             }
 
             // Check if LLM is enabled by the user
@@ -404,8 +432,9 @@ class MainViewModel @Inject constructor(
         // accumulated duration each time the user starts (or resumes) recording.
         conservativeThreadsApplied = false
 
-        // Check if STT model is downloaded before starting
-        if (!modelDownloadManager.isSttModelDownloaded()) {
+        // Check the model pack selected for this session before starting.
+        val activeSttVariant = modelDownloadManager.getActiveSttVariant()
+        if (!modelDownloadManager.isSttModelDownloaded(activeSttVariant)) {
             Log.e(TAG, "STT model not downloaded, cannot start recording")
             _uiState.update {
                 it.copy(error = "Speech recognition model not downloaded. Please download it from Settings.")
