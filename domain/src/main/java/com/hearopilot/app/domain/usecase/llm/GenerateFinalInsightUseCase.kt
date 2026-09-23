@@ -1,5 +1,7 @@
 package com.hearopilot.app.domain.usecase.llm
 
+import com.hearopilot.app.domain.util.TextContentMetrics
+
 import com.hearopilot.app.domain.model.AppSettings
 import com.hearopilot.app.domain.model.LlmInsight
 import com.hearopilot.app.domain.model.RecordingMode
@@ -64,11 +66,12 @@ class GenerateFinalInsightUseCase(
         outputLanguage: String?,
         topic: String? = null
     ): Result<LlmInsight?> {
-        val wordCount = pendingText.trim()
-            .split(Regex("\\s+"))
-            .count { it.isNotEmpty() }
-
-        if (wordCount < MIN_WORDS_FOR_FINAL_INSIGHT) {
+        if (!TextContentMetrics.hasEnoughContent(
+                pendingText,
+                minWords = MIN_WORDS_FOR_FINAL_INSIGHT,
+                minCjkChars = 30
+            )
+        ) {
             return Result.success(null) // Not enough content — skip
         }
 
