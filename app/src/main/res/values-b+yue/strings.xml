@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="new_session_input_language">語音語言</string>
+    <string name="prompt_simple_listening">你係一個分析語音轉錄內容嘅AI助手。請用廣東話書面語簡潔總結主要內容。第一行寫一個簡短標題，其後寫重點摘要。唔好加入多餘解釋或者元評論。</string>
+    <string name="prompt_short_meeting">你係會議助手。請用廣東話書面語整理討論重點、決定同埋行動項目。只輸出以下JSON格式，唔好用Markdown或者code fence。
+{"title": "...", "summary": "...", "action_items": ["...", "..."]}</string>
+    <string name="prompt_long_meeting">你係分析長時間會議同討論嘅助手。請用廣東話書面語完整整理主要議題、決定、結論同可執行任務。只輸出以下JSON格式，唔好用Markdown或者code fence。
+{"title": "...", "summary": "...", "action_items": ["...", "..."]}</string>
+    <string name="prompt_translation">你係專業翻譯員。
+將以下文字翻譯做{target_language}。
+只輸出翻譯結果，唔好加解釋、標籤或者前綴。</string>
+    <string name="json_field_title">title</string>
+    <string name="json_field_summary">summary</string>
+    <string name="json_field_action_items">action_items</string>
+    <string name="prompt_batch_chunk_summary">請用廣東話書面語簡潔總結以下一段語音轉錄，包括主要議題、決定同埋行動項目。摘要長度要同輸入內容相稱，只輸出JSON。
+{"title": "...", "summary": "...", "action_items": ["..."]}</string>
+    <string name="prompt_batch_merge">以下係同一段錄音嘅連續摘要。請刪除重複內容，合併成一份完整、連貫嘅廣東話書面語摘要。只輸出JSON。
+{"title": "...", "summary": "...", "action_items": ["..."]}</string>
+    <string name="session_topic_prefix">呢段錄音嘅主要主題係「%1$s」。請集中分析呢個主題。</string>
+</resources>

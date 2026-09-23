@@ -18,7 +18,7 @@ server.
 - **On-device AI insights** — contextual analysis via llama.cpp (Gemma 3 1B, Q8_0 / IQ4_NL)
 - **100% offline** — privacy-first; no network calls during recording
 - **Four recording modes** — Simple Listening, Short Meeting, Long Meeting, Real-Time Translation
-- **25 UI languages** — full i18n including localized LLM system prompts
+- **27 speech/output languages** — 25 existing European languages plus Japanese and Cantonese; localized AI prompts for all supported output languages
 - **Global search** — full-text search across all transcriptions, AI insights and session names, with highlighted snippets and 300 ms debounce
 - **Session management** — persistent sessions with rename, history, and segment detail view
 - **Inline editing** — edit transcription segments, AI insight content, and individual tasks directly from session history
@@ -87,7 +87,8 @@ HearoPilot/
 
 | Role | Model | Size |
 |---|---|---|
-| **STT** | NeMo Parakeet TDT 0.6B Int8 (Sherpa-ONNX) | ~670 MB (3 ONNX files + tokens.txt) |
+| **STT — default** | NeMo Parakeet TDT 0.6B Int8 (Sherpa-ONNX) | ~670 MB (3 ONNX files + tokens.txt) |
+| **STT — Japanese/Cantonese** | SenseVoice zh/en/ja/ko/yue Int8 (Sherpa-ONNX, optional) | ~240 MB |
 | **LLM — Q8\_0** | Gemma 3 1B Q8\_0 (llama.cpp GGUF) | ~1 GB |
 | **LLM — IQ4\_NL** | Gemma 3 1B IQ4\_NL (llama.cpp GGUF) | ~650 MB |
 | **LLM — Qwen 3.5 (beta)** | Qwen 3.5 0.8B Q8\_0 (llama.cpp GGUF) | ~870 MB |
@@ -317,10 +318,10 @@ Key milestones from MVP to the current release:
 
 ## Localization
 
-Supported locales (25): `en`, `bg`, `cs`, `da`, `de`, `el`, `es`, `et`, `fi`, `fr`, `hr`, `hu`,
-`it`, `lt`, `lv`, `mt`, `nl`, `pl`, `pt`, `ro`, `ru`, `sk`, `sl`, `sv`, `uk`
+Supported speech/output language codes (27): `en`, `bg`, `cs`, `da`, `de`, `el`, `es`, `et`, `fi`, `fr`, `hr`, `hu`,
+`it`, `ja`, `lt`, `lv`, `mt`, `nl`, `pl`, `pt`, `ro`, `ru`, `sk`, `sl`, `sv`, `uk`, `yue`
 
-Every locale file contains fully translated UI strings **and** LLM system prompts. JSON field
+Existing European locale files contain fully translated UI strings and LLM system prompts. Japanese and Cantonese currently add speech/output selection plus localized AI prompts while unspecified UI strings fall back to English. JSON field
 names (`"title"`, `"summary"`, `"action_items"`) remain in English across all locales to ensure
 consistent JSON parsing.
 

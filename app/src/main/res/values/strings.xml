@@ -328,6 +328,7 @@
     <string name="mode_short_meeting_desc">Summary, suggestions and tasks</string>
     <string name="mode_long_meeting_desc">In-depth analysis for long sessions</string>
     <string name="mode_translation_desc">Real-time translation</string>
+    <string name="new_session_input_language">Speech Language</string>
     <string name="new_session_output_language">Translation Output Language</string>
     <string name="new_session_output_language_label">Output Language</string>
     <string name="new_session_language_auto">Auto (Device Language)</string>

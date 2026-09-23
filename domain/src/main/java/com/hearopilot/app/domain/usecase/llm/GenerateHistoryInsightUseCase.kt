@@ -87,6 +87,7 @@ class GenerateHistoryInsightUseCase(
             val newSession = transcriptionRepository.createSession(
                 name = newSessionName,
                 mode = sourceSession.mode,
+                inputLanguage = sourceSession.inputLanguage,
                 outputLanguage = effectiveOutputLanguage,
                 insightStrategy = InsightStrategy.END_OF_SESSION,
                 topic = sourceSession.topic

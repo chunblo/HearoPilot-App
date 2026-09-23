@@ -21,7 +21,7 @@ data class TranscriptionSession(
     val createdAt: Long,
     val lastModifiedAt: Long,
     val mode: RecordingMode = RecordingMode.SIMPLE_LISTENING,
-    val inputLanguage: String = "it",
+    val inputLanguage: String = "auto",
     val outputLanguage: String? = null, // Target language for translation mode, null otherwise
     val durationMs: Long = 0L,
     val insightStrategy: InsightStrategy = InsightStrategy.REAL_TIME,

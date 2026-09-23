@@ -47,7 +47,7 @@ import com.hearopilot.app.ui.ui.theme.*
 @Composable
 fun NewSessionDialog(
     onDismiss: () -> Unit,
-    onConfirm: (String?, RecordingMode, String?, InsightStrategy, String?) -> Unit,
+    onConfirm: (String?, RecordingMode, String, String?, InsightStrategy, String?) -> Unit,
     settings: AppSettings = AppSettings()
 ) {
     val languages = com.hearopilot.app.domain.model.SupportedLanguages.ALL
@@ -62,6 +62,9 @@ fun NewSessionDialog(
     // Single combined input: used as both session name and topic
     var sessionTopic by remember { mutableStateOf("") }
     var selectedMode by remember { mutableStateOf(RecordingMode.SIMPLE_LISTENING) }
+    // Empty means automatic detection using the existing Parakeet multilingual pack.
+    // Japanese and Cantonese explicitly select the optional SenseVoice pack.
+    var inputLanguage by remember { mutableStateOf("") }
     // Always a valid BCP-47 code — device locale for analysis modes, translation target for translation mode.
     var outputLanguage by remember { mutableStateOf(deviceLanguageCode) }
     // Default strategy for the selected mode, updated when mode changes.
@@ -140,6 +143,14 @@ fun NewSessionDialog(
                         .padding(20.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
+                    LanguageSelector(
+                        label = stringResource(R.string.new_session_input_language),
+                        languages = languages.filter { it.code == "ja" || it.code == "yue" },
+                        selectedCode = inputLanguage,
+                        showAutoOption = true,
+                        onLanguageSelected = { inputLanguage = it }
+                    )
+
                     // Language selector — shown first so the user picks the output language
                     // before choosing a mode. For REAL_TIME_TRANSLATION it is the translation
                     // target; for all other modes it selects which locale's system prompt is used.
@@ -217,6 +228,7 @@ fun NewSessionDialog(
                             onConfirm(
                                 nameAndTopic,
                                 selectedMode,
+                                inputLanguage.ifEmpty { "auto" },
                                 langArg,
                                 insightStrategy,
                                 nameAndTopic

@@ -158,8 +158,8 @@ fun SessionsScreen(
         if (uiState.showNewSessionDialog) {
             NewSessionDialog(
                 onDismiss = { viewModel.hideNewSessionDialog() },
-                onConfirm = { name, mode, outputLang, strategy, topic ->
-                    viewModel.createSession(name, mode, outputLang, strategy, topic) { sessionId ->
+                onConfirm = { name, mode, inputLang, outputLang, strategy, topic ->
+                    viewModel.createSession(name, mode, inputLang, outputLang, strategy, topic) { sessionId ->
                         onNavigateToRecording(sessionId)
                     }
                 },
