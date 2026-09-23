@@ -95,3 +95,36 @@ fun modelConfigForVariant(variant: LlmModelVariant): ModelConfig = when (variant
     LlmModelVariant.IQ4_NL       -> LowEndModelConfig.INSTANCE
     LlmModelVariant.QWEN3_5_Q8_0 -> Qwen35ModelConfig.INSTANCE
 }
+
+
+/**
+ * On-device speech-recognition model packs.
+ *
+ * PARAKEET_EUROPEAN is the existing default and keeps the legacy models/stt directory.
+ * SENSEVOICE_CJK is an optional compact pack used for Japanese and Cantonese.
+ */
+enum class SttModelVariant(
+    val directoryName: String,
+    val baseUrl: String,
+    val files: List<String>,
+    val sherpaModelType: Int
+) {
+    PARAKEET_EUROPEAN(
+        directoryName = "stt",
+        baseUrl = STT_BASE_URL,
+        files = STT_FILES,
+        sherpaModelType = 40
+    ),
+    SENSEVOICE_CJK(
+        directoryName = "stt-sensevoice-cjk",
+        baseUrl = "https://huggingface.co/csukuangfj/sherpa-onnx-sense-voice-zh-en-ja-ko-yue-int8-2025-09-09/resolve/main",
+        files = listOf("model.int8.onnx", "tokens.txt"),
+        sherpaModelType = 41
+    )
+}
+
+/** Route Japanese and Cantonese to SenseVoice; all existing languages stay on Parakeet. */
+fun sttModelVariantForLanguage(languageCode: String): SttModelVariant = when (languageCode.lowercase()) {
+    "ja", "yue" -> SttModelVariant.SENSEVOICE_CJK
+    else -> SttModelVariant.PARAKEET_EUROPEAN
+}
