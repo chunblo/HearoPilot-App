@@ -33,18 +33,23 @@ object AppModule {
         @ApplicationContext context: Context,
         modelDownloadManager: ModelDownloadManager
     ): OfflineRecognizer {
-        // Get STT model path from downloaded files
-        val sttModelPath = modelDownloadManager.getSttModelPath()
-            ?: throw IllegalStateException("STT model not downloaded. Please download the model first.")
+        val variant = modelDownloadManager.getActiveSttVariant()
+        val sttModelPath = modelDownloadManager.getSttModelPath(variant)
+            ?: throw IllegalStateException("STT model not downloaded for $variant")
 
-        // Model type 40 = sherpa-onnx-nemo-parakeet-tdt-0.6b-v3-int8
-        val config = getOfflineModelConfig(type = 40)!!
-
-        // Override model paths to use downloaded files instead of assets
-        config.transducer.encoder = "$sttModelPath/encoder.int8.onnx"
-        config.transducer.decoder = "$sttModelPath/decoder.int8.onnx"
-        config.transducer.joiner = "$sttModelPath/joiner.int8.onnx"
-        config.tokens = "$sttModelPath/tokens.txt"
+        val config = getOfflineModelConfig(type = variant.sherpaModelType)!!
+        when (variant) {
+            com.hearopilot.app.data.config.SttModelVariant.PARAKEET_EUROPEAN -> {
+                config.transducer.encoder = "$sttModelPath/encoder.int8.onnx"
+                config.transducer.decoder = "$sttModelPath/decoder.int8.onnx"
+                config.transducer.joiner = "$sttModelPath/joiner.int8.onnx"
+                config.tokens = "$sttModelPath/tokens.txt"
+            }
+            com.hearopilot.app.data.config.SttModelVariant.SENSEVOICE_CJK -> {
+                config.senseVoice.model = "$sttModelPath/model.int8.onnx"
+                config.tokens = "$sttModelPath/tokens.txt"
+            }
+        }
 
         // Fixed 2 threads for STT to avoid CPU contention with the LLM engine
         // (which also uses multiple threads). On an 8-core device, 4 STT + 4 LLM
