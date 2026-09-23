@@ -4,6 +4,8 @@ import android.content.Context
 import android.util.Log
 import com.hearopilot.app.data.config.ModelConfig
 import com.hearopilot.app.data.config.DefaultModelConfig
+import com.hearopilot.app.data.config.SttModelVariant
+import com.hearopilot.app.data.config.sttModelVariantForLanguage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -386,4 +388,98 @@ class ModelDownloadManager(
         "joiner.int8.onnx"  -> 15_000_000L
         else                -> 100_000L
     }
+    @Volatile
+    private var activeSttVariant: SttModelVariant = SttModelVariant.PARAKEET_EUROPEAN
+
+    fun setActiveSttLanguage(languageCode: String) {
+        activeSttVariant = sttModelVariantForLanguage(languageCode)
+    }
+
+    fun getActiveSttVariant(): SttModelVariant = activeSttVariant
+
+    fun isSttModelDownloaded(variant: SttModelVariant): Boolean {
+        val dir = File(modelsDir, variant.directoryName)
+        return variant.files.all { filename ->
+            File(dir, filename).let { it.exists() && it.length() > 0 }
+        }
+    }
+
+    fun getSttModelPath(variant: SttModelVariant): String? =
+        if (isSttModelDownloaded(variant)) File(modelsDir, variant.directoryName).absolutePath else null
+
+    fun downloadSttModel(variant: SttModelVariant): Flow<DownloadProgress> {
+        if (variant == SttModelVariant.PARAKEET_EUROPEAN) return downloadSttModel()
+        return downloadSttVariant(variant)
+    }
+
+    private fun downloadSttVariant(variant: SttModelVariant): Flow<DownloadProgress> = flow {
+        val dir = File(modelsDir, variant.directoryName).apply { mkdirs() }
+        if (isSttModelDownloaded(variant)) {
+            val total = variant.files.sumOf { File(dir, it).length() }
+            emit(DownloadProgress(total, total, 100))
+            return@flow
+        }
+
+        val sizes = variant.files.associateWith { filename ->
+            try {
+                val connection = URL("${variant.baseUrl}/$filename").openConnection() as HttpURLConnection
+                connection.requestMethod = "HEAD"
+                connection.connectTimeout = 15000
+                connection.instanceFollowRedirects = true
+                connection.connect()
+                connection.contentLengthLong.also { connection.disconnect() }.coerceAtLeast(1L)
+            } catch (_: Exception) {
+                if (filename.endsWith(".onnx")) 240_000_000L else 2_000_000L
+            }
+        }
+        val totalBytes = sizes.values.sum()
+        var completedBytes = variant.files.sumOf { filename ->
+            File(dir, filename).takeIf { it.exists() }?.length() ?: 0L
+        }
+
+        variant.files.forEach { filename ->
+            val outputFile = File(dir, filename)
+            if (outputFile.exists() && outputFile.length() > 0) return@forEach
+            val partialFile = File(dir, "$filename.partial")
+            var startByte = partialFile.takeIf { it.exists() }?.length() ?: 0L
+            completedBytes += startByte
+
+            val connection = URL("${variant.baseUrl}/$filename").openConnection() as HttpURLConnection
+            connection.connectTimeout = 15000
+            connection.readTimeout = 15000
+            connection.instanceFollowRedirects = true
+            if (startByte > 0) connection.setRequestProperty("Range", "bytes=$startByte-")
+            connection.connect()
+            val isResuming = startByte > 0 && connection.responseCode == HttpURLConnection.HTTP_PARTIAL
+            if (startByte > 0 && !isResuming) {
+                completedBytes -= startByte
+                startByte = 0L
+            }
+            connection.inputStream.use { input ->
+                FileOutputStream(partialFile, isResuming).use { output ->
+                    val buffer = ByteArray(8192)
+                    var read: Int
+                    while (input.read(buffer).also { read = it } != -1) {
+                        output.write(buffer, 0, read)
+                        completedBytes += read
+                        emit(DownloadProgress(
+                            completedBytes,
+                            totalBytes,
+                            ((completedBytes * 100) / totalBytes).toInt().coerceIn(0, 99)
+                        ))
+                    }
+                }
+            }
+            connection.disconnect()
+            if (!partialFile.renameTo(outputFile)) {
+                partialFile.copyTo(outputFile, overwrite = true)
+                partialFile.delete()
+            }
+        }
+
+        if (!isSttModelDownloaded(variant)) error("STT model download incomplete")
+        emit(DownloadProgress(totalBytes, totalBytes, 100))
+    }.flowOn(Dispatchers.IO)
+
+
 }
