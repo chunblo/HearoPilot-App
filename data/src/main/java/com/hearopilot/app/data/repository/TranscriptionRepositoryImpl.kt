@@ -44,6 +44,7 @@ class TranscriptionRepositoryImpl @Inject constructor(
     override suspend fun createSession(
         name: String?,
         mode: RecordingMode,
+        inputLanguage: String,
         outputLanguage: String?,
         insightStrategy: InsightStrategy,
         topic: String?
@@ -56,7 +57,7 @@ class TranscriptionRepositoryImpl @Inject constructor(
                 createdAt = now,
                 lastModifiedAt = now,
                 mode = mode,
-                inputLanguage = "it", // Auto-detected by STT, default to Italian
+                inputLanguage = inputLanguage,
                 outputLanguage = outputLanguage,
                 insightStrategy = insightStrategy,
                 topic = topic?.takeIf { it.isNotBlank() }
