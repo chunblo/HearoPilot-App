@@ -1,5 +1,7 @@
 package com.hearopilot.app.domain.usecase.llm
 
+import com.hearopilot.app.domain.util.TextContentMetrics
+
 import com.hearopilot.app.domain.model.AppSettings
 import com.hearopilot.app.domain.model.BatchInsightProgress
 import com.hearopilot.app.domain.model.LlmInsight
@@ -86,8 +88,12 @@ class GenerateBatchInsightUseCase(
     ): Result<LlmInsight?> {
         val fullText = segments.joinToString(" ") { it.text.trim() }.trim()
 
-        val wordCount = fullText.split(Regex("\\s+")).count { it.isNotEmpty() }
-        if (wordCount < MIN_WORDS_FOR_BATCH) {
+        if (!TextContentMetrics.hasEnoughContent(
+                fullText,
+                minWords = MIN_WORDS_FOR_BATCH,
+                minCjkChars = 30
+            )
+        ) {
             return Result.success(null)
         }
 
@@ -286,8 +292,17 @@ class GenerateBatchInsightUseCase(
         while (start < text.length) {
             var end = minOf(start + MAX_CHUNK_CHARS, text.length)
             if (end < text.length) {
-                val spaceIdx = text.lastIndexOf(' ', end)
-                if (spaceIdx > start) end = spaceIdx
+                val boundaryCandidates = listOf(
+                    text.lastIndexOf('。', end),
+                    text.lastIndexOf('！', end),
+                    text.lastIndexOf('？', end),
+                    text.lastIndexOf('.', end),
+                    text.lastIndexOf('!', end),
+                    text.lastIndexOf('?', end),
+                    text.lastIndexOf(' ', end)
+                )
+                val boundary = boundaryCandidates.maxOrNull() ?: -1
+                if (boundary > start) end = boundary + 1
             }
             chunks.add(text.substring(start, end).trim())
             start = end
