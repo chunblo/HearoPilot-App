@@ -22,6 +22,7 @@ class CreateSessionUseCase(
      *
      * @param name Optional user-provided name (can be null or blank)
      * @param mode Recording mode determining insight frequency and format
+     * @param inputLanguage Speech language selector used to route the on-device STT model.
      * @param outputLanguage Optional target language for translation mode
      * @param insightStrategy Whether to generate insights in real-time or at end of session
      * @param topic Optional main subject/topic for focused AI insights
@@ -30,6 +31,7 @@ class CreateSessionUseCase(
     suspend operator fun invoke(
         name: String?,
         mode: RecordingMode = RecordingMode.SIMPLE_LISTENING,
+        inputLanguage: String = "auto",
         outputLanguage: String? = null,
         insightStrategy: InsightStrategy = InsightStrategy.REAL_TIME,
         topic: String? = null
@@ -37,6 +39,7 @@ class CreateSessionUseCase(
         return transcriptionRepository.createSession(
             name = name?.takeIf { it.isNotBlank() },
             mode = mode,
+            inputLanguage = inputLanguage,
             outputLanguage = outputLanguage,
             insightStrategy = insightStrategy,
             topic = topic?.takeIf { it.isNotBlank() }
