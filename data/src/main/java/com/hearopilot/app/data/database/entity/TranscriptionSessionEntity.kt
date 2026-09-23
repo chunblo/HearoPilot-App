@@ -29,7 +29,7 @@ data class TranscriptionSessionEntity(
     val mode: String = "SIMPLE_LISTENING",
 
     @ColumnInfo(name = "input_language")
-    val inputLanguage: String = "it",
+    val inputLanguage: String = "auto",
 
     @ColumnInfo(name = "output_language")
     val outputLanguage: String? = null,
