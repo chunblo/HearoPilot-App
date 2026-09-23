@@ -22,7 +22,7 @@ data class SupportedLanguage(
  * Add new languages here; the UI and LLM layer pick them up automatically.
  *
  * Locale codes match the app's res/values-XX folders:
- * en, bg, cs, da, de, el, es, et, fi, fr, hr, hu, it, lt, lv, mt, nl, pl, pt, ro, ru, sk, sl, sv, uk
+ * en, bg, cs, da, de, el, es, et, fi, fr, hr, hu, it, ja, lt, lv, mt, nl, pl, pt, ro, ru, sk, sl, sv, uk, yue
  */
 object SupportedLanguages {
 
@@ -40,6 +40,7 @@ object SupportedLanguages {
         SupportedLanguage("el", "Greek",       "Ελληνικά"),
         SupportedLanguage("hu", "Hungarian",   "Magyar"),
         SupportedLanguage("it", "Italian",     "Italiano"),
+        SupportedLanguage("ja", "Japanese",    "日本語"),
         SupportedLanguage("lv", "Latvian",     "Latviešu"),
         SupportedLanguage("lt", "Lithuanian",  "Lietuvių"),
         SupportedLanguage("mt", "Maltese",     "Malti"),
@@ -52,6 +53,7 @@ object SupportedLanguages {
         SupportedLanguage("es", "Spanish",     "Español"),
         SupportedLanguage("sv", "Swedish",     "Svenska"),
         SupportedLanguage("uk", "Ukrainian",   "Українська"),
+        SupportedLanguage("yue", "Cantonese",  "粵語"),
     ).sortedWith(compareBy(java.text.Collator.getInstance(java.util.Locale.ROOT)) { it.nativeName })
 
     /** Look up a language by its BCP-47 code. Returns null if not found. */
