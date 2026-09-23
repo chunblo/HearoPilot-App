@@ -1,5 +1,7 @@
 package com.hearopilot.app.domain.usecase.sync
 
+import com.hearopilot.app.domain.util.TextContentMetrics
+
 import com.hearopilot.app.domain.model.AppSettings
 import com.hearopilot.app.domain.model.LlmInsight
 import com.hearopilot.app.domain.model.RecordingMode
@@ -236,8 +238,12 @@ class SyncSttLlmUseCase(
                     // Skip if not enough new content (except REAL_TIME_TRANSLATION,
                     // where even short phrases should be translated immediately).
                     if (mode != RecordingMode.REAL_TIME_TRANSLATION) {
-                        val wordCount = newContent.trim().split(Regex("\\s+")).count { it.isNotEmpty() }
-                        if (wordCount < MIN_NEW_WORDS_FOR_INFERENCE) return@collect
+                        if (!TextContentMetrics.hasEnoughContent(
+                                newContent,
+                                minWords = MIN_NEW_WORDS_FOR_INFERENCE,
+                                minCjkChars = 8
+                            )
+                        ) return@collect
                     }
 
                     if (newContent.isNotBlank()) {
