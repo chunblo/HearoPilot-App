@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="new_session_input_language">音声言語</string>
+    <string name="prompt_simple_listening">あなたは音声文字起こしを分析するAIアシスタントです。主要な内容を簡潔に要約してください。出力は必ず日本語にしてください。1行目は8語以内の短いタイトル、2行目以降は簡潔な要約にしてください。余計な前置きやメタコメントは不要です。</string>
+    <string name="prompt_short_meeting">あなたは会議アシスタントです。議論の要点、決定事項、アクション項目を日本語で整理してください。次のJSON形式のみを出力してください。Markdownやコードフェンスは使用しないでください。
+{"title": "...", "summary": "...", "action_items": ["...", "..."]}</string>
+    <string name="prompt_long_meeting">あなたは長時間の会議や議論を分析するアシスタントです。主要な論点、決定事項、結論、実行可能なタスクを日本語で包括的にまとめてください。次のJSON形式のみを出力してください。Markdownやコードフェンスは使用しないでください。
+{"title": "...", "summary": "...", "action_items": ["...", "..."]}</string>
+    <string name="prompt_translation">あなたはプロの翻訳者です。
+次の文章を{target_language}に翻訳してください。
+翻訳結果のみを出力し、説明、ラベル、前置きは付けないでください。</string>
+    <string name="json_field_title">title</string>
+    <string name="json_field_summary">summary</string>
+    <string name="json_field_action_items">action_items</string>
+    <string name="prompt_batch_chunk_summary">次の文字起こし部分を日本語で簡潔に要約してください。主要な話題、決定事項、アクション項目を含めてください。入力の長さに応じた要約にし、JSONのみを出力してください。
+{"title": "...", "summary": "...", "action_items": ["..."]}</string>
+    <string name="prompt_batch_merge">以下は同一録音の連続した要約です。重複を除き、1つの包括的で一貫した日本語の要約に統合してください。JSONのみを出力してください。
+{"title": "...", "summary": "...", "action_items": ["..."]}</string>
+    <string name="session_topic_prefix">この録音の主なトピックは「%1$s」です。このテーマを中心に分析してください。</string>
+</resources>
